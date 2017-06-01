@@ -1,5 +1,14 @@
+body {
+  background: #ff0000;
+}
 #main_content {
   width: 80%;
+  right: 0;
+  left: 0;
+  margin-right: auto;
+  margin-left: auto;
+  position:absolute;
+  top:20%; bottom:20%
 }
 
 #googleMap {
@@ -37,7 +46,7 @@ input[type=text] {
     border-radius: 4px;
     font-size: 16px;
     background-color: white;
-    background-image: url(/assets/searchicon.png);
+    background-image: url(/assets/images/searchicon.png);
     background-position: 10px 10px;
     background-repeat: no-repeat;
     padding: 12px 20px 12px 40px;

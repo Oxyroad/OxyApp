@@ -4,7 +4,7 @@ import { Observable } from 'rxjs/Observable';
 import 'rxjs/add/operator/map';
 import 'rxjs/add/operator/catch';
 
-import {LatLng} from './app.component';
+import {LatLng, RouteInfo} from './app.component';
 
 import 'rxjs/add/operator/toPromise';
 
@@ -21,8 +21,8 @@ export class LineService {
                .catch(this.handleError);
   }
 
-  getRoute(line: string): Observable<LatLng[]> {
-      return this.http.get(this.routeUrl + line).map(res => res.json()['route'])
+  getRoute(line: string): Observable<RouteInfo> {
+      return this.http.get(this.routeUrl + line).map(res => res.json())
                .catch(this.handleError);
   }
   

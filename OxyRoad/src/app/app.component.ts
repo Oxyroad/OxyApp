@@ -22,11 +22,28 @@ export class SearchFilter implements PipeTransform {
     }
 }
 
+function componentToHex(c) {
+    var hex = c.toString(16);
+    return hex.length == 1 ? "0" + hex : hex;
+}
+
+function rgbToHex(r, g, b) {
+    return "#" + componentToHex(r) + componentToHex(g) + componentToHex(b);
+}
+
 export class LatLng {
     constructor(lat: number, lng: number){}
     lat: number;
     lng: number;
 }
+
+export class RouteInfo {
+    constructor(green_waypoints: LatLng[], route: LatLng[]){}
+    green_waypoints: LatLng[];
+    route: LatLng[];
+
+}
+
 
 @Component({
     selector: 'app-root',
@@ -37,9 +54,9 @@ export class LatLng {
 export class TransportComponent {
     lines: string[] = [];
     route: LatLng[];
+    green_waypoints: LatLng[];
+    line_color: number[];
     search_value = "";
-    coords = [[20.9299259,52.2918205], [21.0600204,52.2584953], 
-              [21.004961,52.2199554]]
     selectedLine: string;
 
     directionsService = new google.maps.DirectionsService();
@@ -57,12 +74,16 @@ export class TransportComponent {
     }
 
     getRoute(line: string): void {
-         this.lineService.getRoute(line).subscribe(values => { 
-            this.route = values;
+        this.lineService.getRoute(line).subscribe(routeInfo => { 
+            this.route = routeInfo["route"];
+            this.green_waypoints = routeInfo["green_waypoints"];
+            this.line_color = routeInfo["color"];
+            var hexColor = rgbToHex(this.line_color[0], this.line_color[1],this.line_color[2])
             var directionsDisplay = new google.maps.DirectionsRenderer({
                 map: map,
-                preserveViewport: true,
-                markerOptions: { visible: false}
+                preserveViewport: false,
+                markerOptions: { visible: false},
+                polylineOptions: {strokeColor: hexColor}
             });
         
             var waypoints = [];
@@ -78,7 +99,7 @@ export class TransportComponent {
                 origin: new google.maps.LatLng(this.route[0].lat, this.route[0].lng),
                 destination: new google.maps.LatLng(this.route[this.route.length-1].lat,
                                                 this.route[this.route.length-1].lng),
-            
+           
                 waypoints: waypoints,
                 travelMode: google.maps.TravelMode.DRIVING
             }, function(response, status) {
@@ -87,7 +108,21 @@ export class TransportComponent {
                 } else {
                     window.alert('Directions request failed due to ' + status);
             }});
-                                                   });
+
+            for (let green_point of this.green_waypoints) {
+                console.log(green_point);
+                var greenCircle = new google.maps.Circle({
+                    strokeColor: '#217c21',
+                    strokeOpacity: 0.8,
+                    strokeWeight: 2,
+                    fillColor: '#32CD32',
+                    fillOpacity: 0.35,
+                    map: map,
+                    center: {lat: green_point.lat, lng: green_point.lng},
+                    radius: 30 
+                });
+            }
+        });
     }
 
     constructor(private lineService: LineService) {}
@@ -102,10 +137,6 @@ export class TransportComponent {
     }
     drawRoute(line: string): void {
         this.getRoute(line);
-        console.log(this.route);
+    }
 
-        
-
-        console.log(this.route);
-   }
 }
