@@ -1,0 +1,15 @@
+<body>
+  <div id="main_content">
+    <div id="googleMap"></div>
+    <div id="transport_menu">
+      <input #search  (keyup)="0" id="search_box" type="text" placeholder="Search">
+      <ul *ngIf="!selectedLine" class="lines">
+        <li *ngFor="let line of (lines | searchFilter: search.value)"
+          (click)="onSelect(line)">
+          {{ line }}
+        </li>
+      </ul>
+
+    </div>
+  </div>
+</body>
