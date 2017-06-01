@@ -101,6 +101,7 @@ export class TransportComponent {
                                                 this.route[this.route.length-1].lng),
            
                 waypoints: waypoints,
+                optimizeWaypoints: true,
                 travelMode: google.maps.TravelMode.DRIVING
             }, function(response, status) {
                 if (status === google.maps.DirectionsStatus.OK) {
