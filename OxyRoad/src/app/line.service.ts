@@ -1,5 +1,8 @@
 import { Injectable } from '@angular/core';
 import { Http, Response } from '@angular/http';
+import { Observable } from 'rxjs/Observable';
+import 'rxjs/add/operator/map';
+import 'rxjs/add/operator/catch';
 
 import {LatLng} from './app.component';
 
@@ -18,13 +21,10 @@ export class LineService {
                .catch(this.handleError);
   }
 
-  getRoute(line: string): Promise<LatLng[]> {
-      return this.http.get(this.routeUrl + line)
-               .toPromise()
-               .then(response => response.json()['route'])
+  getRoute(line: string): Observable<LatLng[]> {
+      return this.http.get(this.routeUrl + line).map(res => res.json()['route'])
                .catch(this.handleError);
   }
-
   
   constructor(public http: Http) { }
 

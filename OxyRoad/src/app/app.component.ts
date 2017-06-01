@@ -2,6 +2,8 @@ import { Component, OnInit } from '@angular/core';
 import { Pipe,PipeTransform} from '@angular/core';
 import { LineService } from './line.service';
 
+import { Observable } from 'rxjs/Observable';
+
 
 declare var google: any;
 var map: any;
@@ -21,8 +23,9 @@ export class SearchFilter implements PipeTransform {
 }
 
 export class LatLng {
-    lat: string;
-    lng: string;
+    constructor(lat: number, lng: number){}
+    lat: number;
+    lng: number;
 }
 
 @Component({
@@ -33,6 +36,8 @@ export class LatLng {
 })
 export class TransportComponent {
     lines: string[] = [];
+    route: LatLng[];
+    search_value = "";
     coords = [[20.9299259,52.2918205], [21.0600204,52.2584953], 
               [21.004961,52.2199554]]
     selectedLine: string;
@@ -40,6 +45,7 @@ export class TransportComponent {
     directionsService = new google.maps.DirectionsService();
 
     public onSelect(line: string): void {
+        this.search_value = line;
         this.selectedLine = line;
         this.drawRoute(line);
     }
@@ -50,8 +56,38 @@ export class TransportComponent {
         .then(lines => this.lines = lines);
     }
 
-    getRoute(line: string): LatLng[] {
-        return this.lineService.getRoute(line).then(route => route);
+    getRoute(line: string): void {
+         this.lineService.getRoute(line).subscribe(values => { 
+            this.route = values;
+            var directionsDisplay = new google.maps.DirectionsRenderer({
+                map: map,
+                preserveViewport: true,
+                markerOptions: { visible: false}
+            });
+        
+            var waypoints = [];
+            for(let i=1; i<this.route.length-1; i++){
+                let point = this.route[i];
+                waypoints.push({
+                    stopover: false, 
+                    location: new google.maps.LatLng(point.lat, point.lng)
+                });
+            }
+
+            this.directionsService.route({
+                origin: new google.maps.LatLng(this.route[0].lat, this.route[0].lng),
+                destination: new google.maps.LatLng(this.route[this.route.length-1].lat,
+                                                this.route[this.route.length-1].lng),
+            
+                waypoints: waypoints,
+                travelMode: google.maps.TravelMode.DRIVING
+            }, function(response, status) {
+                if (status === google.maps.DirectionsStatus.OK) {
+                    directionsDisplay.setDirections(response);
+                } else {
+                    window.alert('Directions request failed due to ' + status);
+            }});
+                                                   });
     }
 
     constructor(private lineService: LineService) {}
@@ -64,28 +100,12 @@ export class TransportComponent {
         };
         map = new google.maps.Map(document.getElementById("googleMap"), mapProp);
     }
-    drawRoute(line: string): string {
-        var directionsDisplay = new google.maps.DirectionsRenderer({
-            map: map,
-            preserveViewport: true,
-            markerOptions: { visible: false}
-        });
-        var route = getRoute();
+    drawRoute(line: string): void {
+        this.getRoute(line);
+        console.log(this.route);
 
-        this.directionsService.route({
-            origin: new google.maps.LatLng(52.2848927,20.9315048),
-            destination: new google.maps.LatLng(52.2811923,20.9480793),
-            waypoints: [{
-                stopover: false,
-                location: new google.maps.LatLng(52.2858283,20.9380713)
-            }],
-            travelMode: google.maps.TravelMode.DRIVING
-        }, function(response, status) {
-            console.log(response);
-            if (status === google.maps.DirectionsStatus.OK) {
-                directionsDisplay.setDirections(response);
-            } else {
-                window.alert('Directions request failed due to ' + status);
-        }});
+        
+
+        console.log(this.route);
    }
 }
