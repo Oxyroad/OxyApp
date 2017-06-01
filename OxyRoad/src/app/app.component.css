@@ -1,3 +1,6 @@
+html {
+  background-image: url(/assets/images/tree2.svg);
+}
 body {
   background: #ff0000;
 }
